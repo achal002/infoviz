@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<head>
+<style>
+  body {font-family: garamond;} 
+  .axis {font: 14px garamond;}
+  .label {font: 16px garamond;}
+
+  p {
+  display: block;
+  align : center;
+  font: 24px garamond;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+    .axis .domain {
+        display: none;
+    }
+
+</style>
+</head>
+<body> 
+<p>
+As we can see that the Imports were always high when compared to the exports. But for the year 2019 something happened. Now though the imports and exports were almost the same as the previous year, but the currency value reduced.  <br><br>
+
+To see why that happened, we will see the total number of exports and imports. In March 2019, the prices on crude oil has reduced and since crude oil is imported on large number when compared to other goods, it affected the currency. Since less amount of rupee was converted into dollars here.
+</p>
+ <div style="width: 800px; float:left; height:500px; margin:10px">  <svg id="chart3" width="800" height="500" align="left"></svg> </div>
+ <div style="width: 800px; float:left; height:500px; margin:10px">  <svg id="chart4" width="800" height="500" align="left"></svg> </div>
+
+
+<script>
+//chart 3
+var svg2 = d3.select("#chart3"),
+        margin = {top: 20, right: 40, bottom: 30, left: 40},
+        width = +svg2.attr("width") - margin.left - margin.right,
+        height = +svg2.attr("height") - margin.top - margin.bottom,
+        g2 = svg2.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // The scale spacing the groups:
+    var x0 = d3.scaleBand()
+        .rangeRound([0, width])
+        .paddingInner(0.1);
+
+    // The scale for spacing each group's bar:
+    var x1 = d3.scaleBand()
+        .padding(0.0359999999999999);
+
+    var y = d3.scaleLinear()
+        .rangeRound([height, 0]);
+
+    
+    d3.csv("data.csv", function(d, i, columns) {
+        for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
+        return d;
+    }).then(function(data) {
+        console.log(data);
+
+        var keys = data.columns.slice(1);
+
+        console.log('keys');
+        console.log(keys);
+        x0.domain(data.map(function(d) { return d.Factors; }));
+        x1.domain(keys).rangeRound([0, x0.bandwidth()]);
+        y.domain([0, d3.max(data, function(d) { return d3.max(keys, function(key) { return d[key]; }); })]).nice();
+
+      var u = d3.select('#wrapper')
+  .selectAll('.year')
+  .data(data);
+      
+       var colorScale = d3.scaleOrdinal(d3.schemeSet2);
+
+           
+        g2.append("g")
+            .selectAll("g")
+            .data(data)
+            .enter().append("g")
+            .attr("class","bar")
+            .attr("transform", function(d) { return "translate(" + x0(d.Factors) + ",0)"; })
+            .selectAll("rect")
+            .data(function(d) { return keys.map(function(key) { return {key: key, value: d[key]}; }); })
+            .enter().append("rect")
+            .attr("x", function(d) { return x1(d.key); })
+            .attr("y", function(d) { return y(d.value); })
+            .attr("width", x1.bandwidth())
+            .attr("height", function(d) { return height - y(d.value); })
+            .attr("fill", function(d) { return colorScale(d.key); });
+
+      
+      
+        g2.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x0));
+
+        g2.append("g")
+            .attr("class", "y axis")
+            .call(d3.axisLeft(y).ticks(null, "s"))
+            .append("text")
+            .attr("x", 2)
+            .attr("y", y(y.ticks().pop()) + 0.5)
+            .attr("dy", "0.32em")
+            .attr("fill", "#000")
+            .attr("font-weight", "bold")
+            .attr("text-anchor", "start")
+            .text("");
+
+        var legend = g2.append("g")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", 10)
+            .attr("text-anchor", "end")
+            .selectAll("g")
+            .data(keys.slice().reverse())
+            .enter().append("g")
+            .attr("transform", function(d, i) { return "translate(38," + i * 20 + ")"; });
+
+        legend.append("rect")
+            .attr("x", width - 12)
+            .attr("width", 47)
+            .attr("height", 16)
+            .attr("fill", colorScale)
+            .attr("stroke", colorScale)
+            .attr("stroke-width",2);
+            
+
+        legend.append("text")
+            .attr("x", width - 15)
+            .attr("y", 9.5)
+            .attr("dy", "0.32em")
+            .text(function(d) { return d; });
+
+    });
+	
+	
+	
+	//chart 4
+	var w = 500;
+		var h = 468;
+		var padding = 15;
+		var numBars = 5;
+		var colorScale = d3.scaleOrdinal(d3.schemeSet2);
+		var year = ["2013","2014","2015","2016","2017","2018","2019"];
+		
+		//var dataset = data.slice(0, numBars + 1);
+		dataset = [{year: "2013", value: 54.475},
+					{year: "2014", value: 62.085},
+					{year: "2015", value: 63.57},
+					{year: "2016", value:66.83},
+					{year: "2017", value:67.855},
+          {year: "2018", value: 74.33},
+          {year: "2019", value: 68.16}];
+		
+		//scale function
+		var xScale = d3.scaleBand()
+			.domain(d3.range(dataset.length))
+			.rangeRound([0, w])
+			.paddingInner(0.05);
+			
+		var yScale = d3.scaleLinear()
+			.domain([0, d3.max(dataset, function(d) { return d.value; })])
+			//.range([padding, w-padding * 2]);
+			.range([0, h - padding]);
+		
+		//create svg element
+		var svg3 = d3.select("#chart4")
+					.append("svg")
+					.attr("width", w)
+					.attr("height", h);
+					
+		svg3.selectAll("rect")
+			.data(dataset)
+			.enter()
+			.append("rect")
+			.attr("x", function(d, i) {
+				return xScale(i);
+			})
+			.attr("y", function(d) {
+				return h - yScale(d.value);
+			})
+			.attr("width", xScale.bandwidth())
+			.attr("height", function(d) {
+				return yScale(d.value);
+			})
+			.attr("fill", function(d) {
+				return colorScale(d.year);
+			});
+			
+		svg3.selectAll("text")
+			.data(dataset)
+			.enter()
+			.append("text")
+			.text(function(d) {
+				return d.value;
+			})
+			.attr("text-anchor", "middle")
+			.attr("x", function(d, i) {
+				return xScale(i) + padding;//, + xScale.bandwidth() / 2;
+			})
+			.attr("y", function(d) {
+				return h - yScale(d.value) + padding;
+			})
+			.attr("font-family", "sans-serif")
+			.attr("font-size", "14px")
+			.attr("fill", "black");
+		
+	
+</script>
+<div align = "left">
+<form action="index2.html">
+    <input type="submit" value="Prev" />
+</form>
+</div>
+</body>
+</html>

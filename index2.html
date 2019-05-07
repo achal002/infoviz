@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<script src="https://d3js.org/d3.v5.min.js"></script> 
+<head>
+<style>
+  body {font-family: garamond;} 
+  .axis {font: 14px garamond;}
+  .label {font: 16px garamond;}
+
+  p {
+  display: block;
+  align : center;
+  font: 24px garamond;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  margin-left: 0;
+  margin-right: 0;
+}
+    .axis .domain {
+        display: none;
+    }
+
+</style>
+</head>
+<body> 
+<p>
+The value of a currency depends on factors that affect the economy such as <i>imports and exports, inflation, employment, interest rates, growth rate, trade deficit, performance of equity markets, foreign exchange reserves, macroeconomic policies, foreign investment inflows, banking capital, commodity prices, and geopolitical conditions</i>. <br><br>
+A country that sells more goods and services in overseas markets than it buys from them has a trade surplus. This means more foreign currency comes into the country than what is paid for imports. This strengthens the local currency. So, the two major factors that I decided to look into were exports and imports.
+
+</p>
+<div align = "center">  <svg id="chart2" width="800" height="600" align="center"></svg> </div>
+
+<script>
+//Chart 2
+    var svg1 = d3.select("#chart2"),
+        margin = {top: 20, right: 20, bottom: 30, left: 40},
+        width = +svg1.attr("width") - margin.left - margin.right,
+        height = +svg1.attr("height") - margin.top - margin.bottom,
+        g1 = svg1.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // The scale spacing the groups:
+    var x0 = d3.scaleBand()
+        .rangeRound([0, width])
+        .paddingInner(0.1);
+
+    // The scale for spacing each group's bar:
+    var x1 = d3.scaleBand()
+        .padding(0.0359999999999999);
+
+    var y = d3.scaleLinear()
+        .rangeRound([height, 0]);
+
+    
+    d3.csv("data2.csv", function(d, i, columns) {
+        for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
+        return d;
+    }).then(function(data) {
+        console.log(data);
+
+        var keys = data.columns.slice(1);
+
+        console.log('keys');
+        console.log(keys);
+        x0.domain(data.map(function(d) { return d.year; }));
+        x1.domain(keys).rangeRound([0, x0.bandwidth()]);
+        y.domain([0, d3.max(data, function(d) { return d3.max(keys, function(key) { return d[key]; }); })]).nice();
+
+      var u = d3.select('#wrapper')
+  .selectAll('.year')
+  .data(data);
+       var colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+        g1.append("g")
+            .selectAll("g")
+            .data(data)
+            .enter().append("g")
+            .attr("class","bar")
+            .attr("transform", function(d) { return "translate(" + x0(d.year) + ",0)"; })
+            .selectAll("rect")
+            .data(function(d) { return keys.map(function(key) { return {key: key, value: d[key]}; }); })
+            .enter().append("rect")
+            .attr("x", function(d) { return x1(d.key); })
+            .attr("y", function(d) { return y(d.value); })
+            .attr("width", x1.bandwidth())
+            .attr("height", function(d) { return height - y(d.value); })
+            .attr("fill", function(d) { return colorScale(d.key); });
+
+        g1.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x0));
+
+        g1.append("g")
+            .attr("class", "y axis")
+            .call(d3.axisLeft(y).ticks(null, "s"))
+            .append("text")
+            .attr("x", 2)
+            .attr("y", y(y.ticks().pop()) + 0.5)
+            .attr("dy", "0.32em")
+            .attr("fill", "#000")
+            .attr("font-weight", "bold")
+            .attr("text-anchor", "start")
+            .text("");
+
+        var legend = g1.append("g")
+            .attr("font-family", "sans-serif")
+            .attr("font-size", 10)
+            .attr("text-anchor", "end")
+            .selectAll("g")
+            .data(keys.slice().reverse())
+            .enter().append("g")
+            .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+        legend.append("rect")
+            .attr("x", width - 17)
+            .attr("width", 15)
+            .attr("height", 15)
+            .attr("fill", colorScale)
+            .attr("stroke", colorScale)
+            .attr("stroke-width",2);
+            
+
+        legend.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9.5)
+            .attr("dy", "0.32em")
+            .text(function(d) { return d; });
+
+    });
+
+</script>
+<div align = "left">
+<form action="index.html">
+    <input type="submit" value="Prev" />
+</form>
+</div>
+<div align = "right">
+<form action="index3.html">
+    <input type="submit" value="Next" />
+</form>
+</div>
+</body>
+</html>
